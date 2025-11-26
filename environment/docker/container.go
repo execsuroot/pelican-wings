@@ -233,6 +233,10 @@ func (e *Environment) Create() error {
 		}
 	}
 
+	pidsLimit := int64(4096)
+	containerResources := e.Configuration.Limits().AsContainerResources()
+	containerResources.PidsLimit = &pidsLimit
+
 	hostConf := &container.HostConfig{
 		PortBindings: a.DockerBindings(),
 
@@ -248,7 +252,7 @@ func (e *Environment) Create() error {
 
 		// Define resource limits for the container based on the data passed through
 		// from the Panel.
-		Resources: e.Configuration.Limits().AsContainerResources(),
+		Resources: containerResources,
 
 		DNS: cfg.Docker.Network.Dns,
 
