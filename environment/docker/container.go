@@ -237,6 +237,14 @@ func (e *Environment) Create() error {
 	containerResources := e.Configuration.Limits().AsContainerResources()
 	containerResources.PidsLimit = &pidsLimit
 
+	_, disableSecComp := e.Configuration.Labels()["pelican.container.seccomp.disable"];
+	var security_opt []string
+	if (disableSecComp) {
+		security_opt = []string{"seccomp=unconfined"};
+	} else {
+		security_opt = []string{"no-new-privileges"};
+	}
+
 	hostConf := &container.HostConfig{
 		PortBindings: a.DockerBindings(),
 
@@ -262,7 +270,7 @@ func (e *Environment) Create() error {
 		// about anything else in it.
 		LogConfig: cfg.Docker.ContainerLogConfig(),
 
-		SecurityOpt:    []string{"no-new-privileges"},
+		SecurityOpt:    security_opt,
 		ReadonlyRootfs: true,
 		CapDrop: []string{
 			"setpcap", "mknod", "audit_write", "net_raw", "dac_override",
